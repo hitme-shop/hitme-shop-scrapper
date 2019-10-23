@@ -5,7 +5,6 @@ const cors = require('cors')
 const morgan = require('morgan')
 
 /** Routers */
-const scrapperRouter = require('./routes/scrapper/')
 const priyoShop = require('./routes/priyoshop/')
 const ajkerdeal = require("./routes/ajkerdeal/")
 const pickaboo = require("./routes/pickaboo/")
@@ -24,7 +23,6 @@ app.use(morgan('dev'))
 
 /** ROUTES */
 app.use(express.static("public"))
-//app.use("/v1", scrapperRouter)
 app.use("/v1/priyoshop", priyoShop)
 app.use("/v1/ajkerdeal", ajkerdeal)
 app.use("/v1/pickaboo", pickaboo)

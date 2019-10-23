@@ -11,6 +11,5 @@ const categoriesSchema = new mongoose.Schema({
    keywords: Array
 })
 
-const Categories = mongoose.model('Categories', categoriesSchema)
-
-module.exports = Categories
+exports.categories = mongoose.model('categories', categoriesSchema)
+exports.keysInReview = mongoose.model('keys-in-reviews', categoriesSchema)

@@ -8,13 +8,26 @@ const catController = require("../../controllers/categories/")
 router.route("/")
    .get(catController.getCategories)
 
-router.route("/:title")
-   .get(catController.getCategoryFromTitle)
+router.route("/main-categories")
+   .get(catController.mainCategories)
 
-router.route("/:whichCat/:catName")
+router.route("/sub-categories/:mCatName")
+   .get(catController.subCategories)
+
+router.route("/scat-and-cats-of/:mCatName")
+   .get(catController.scatAndCats)
+
+router.route("/:catName")
    .get(catController.getCategory)
-   .put(catController.updateCategory)
    .post(catController.createCategory)
+   .put(catController.patchCategory)
+   .patch(catController.patchCategory)
    .delete(catController.deleteCategory)
+
+router.route("/:catName/keywords/:key")
+   .delete(catController.deleteKeyword)
+
+// router.route("/:title")
+//    .get(catController.getCategoryFromTitle)
 
 module.exports = router

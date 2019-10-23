@@ -1,8 +1,7 @@
 const mongoose = require('mongoose')
 
-const productSchema = new mongoose.Schema({
+const reviewsSchema = new mongoose.Schema({
    title: String,
-   tags: Array,
    src: String,
    url: {
       type: String,
@@ -16,18 +15,13 @@ const productSchema = new mongoose.Schema({
    discount: Number,
    flag: String,
    website: String,
-   mCat: String,
-   sCat: String,
-   cat: String,
-   compared: {
+   cats: {
       type: Array,
-      default: []
+      required: false
    },
-   createdAt: { type: Date, default: Date.now },
-   updatedAt: { type: Date, default: Date.now }
-
+   createdAt: { type: Date, default: Date.now }
 })
 
-const Products = mongoose.model('products', productSchema)
+const inReview = mongoose.model('pro-in-review', reviewsSchema)
 
-module.exports = Products
+module.exports = inReview

@@ -1,5 +1,8 @@
 #optinal folder
 dataset/
+/data
+data
+.vscode
 
 # Logs
 logs

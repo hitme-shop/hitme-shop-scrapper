@@ -1,5 +1,6 @@
 "use strict";
 
+const Store = require("../../store/")
 const cheerio = require('cheerio')
 const helper = require('../helper/helper')
 const websiteName = "Pickaboo"
@@ -47,10 +48,9 @@ class PickabooScrapper {
       let allCats = mCats.concat(sCats).concat(cats)
       return {
          log: {
-            total: allCats.length,
-            mCats: mCats.length,
-            sCats: sCats.length,
-            cats: cats.length
+            mCat: mCats.length,
+            sCat: sCats.length,
+            cat: cats.length
          },
          data: allCats,
       }
@@ -61,6 +61,7 @@ class PickabooScrapper {
       $('.syn-product').each((__, _) => {
          let src = $(_).find('.product-image > img').attr('data-original')
          let title = $(_).find('.syn-product-name > span > a').text().replace(/\r?\n|\r|\t/g, '').split(".").join("").trim()
+         let tags = title.toLowerCase().split(" ")
          let url = $(_).find('.syn-product-name > span > a').attr('href')
          let sPrice = $(_).find('.syn-product-price').text().replace(/\r?\n|\r|\t/g, '')
          let price = sPrice, oPrice = 0
@@ -69,7 +70,7 @@ class PickabooScrapper {
          let discount = ((oPrice - sPrice) / oPrice * 100).toFixed(2) * 1
          let rating = parseFloat($(_).find('.mobile-rating > p.amount-mobile').text().split('/')[0].trim())
          let ratingCount = parseFloat($(_).find('.ratings > .amount > a').text().split('(')[1].split(')')[0])
-         products.push({ title, src, url, rating, ratingCount, flag: flagHome, sPrice, oPrice, discount, website: websiteName })
+         products.push({ title, tags, src, url, rating, ratingCount, flag: flagHome, sPrice, oPrice, discount, website: websiteName })
       }); return products
    }
 
@@ -82,10 +83,11 @@ class PickabooScrapper {
          let price = sPrice, oPrice = 0; sPrice = parseInt(sPrice.split('৳')[1].split(',').join(''))
          if (price.split('৳')[2]) oPrice = parseInt(price.split('৳')[2].split(',').join('')); else oPrice = sPrice
          let title = $(_).find('.syn-product-name > a > span').text().split(".").join("").trim()
+         let tags = title.toLowerCase().split(" ")
          let rating = parseInt($(_).find('.mobile-rating > p').text().split('/')[0].trim())
          let ratingCount = parseFloat($(_).find('.ratings > .amount > a').text().split('(')[1].split(')')[0])
          let discount = (((oPrice - sPrice) / oPrice) * 100).toFixed(2) * 1
-         deals.push({ title, src, url, rating, ratingCount, flag: flagHot, sPrice, oPrice, discount, website: websiteName })
+         deals.push({ title, tags, src, url, rating, ratingCount, flag: flagHot, sPrice, oPrice, discount, website: websiteName })
       }); return deals
    }
 
@@ -95,6 +97,7 @@ class PickabooScrapper {
       $('.product-item').each((__, _) => {
          if ($(_).find(".out-of-stock span").text() !== "SOLD OUT") {
             let title = $(_).find('.product-name > a').text().trim()
+            let tags = title.toLowerCase().split(" ")
             let url = $(_).find('.product-name > a').attr('href')
             let src = $(_).find('.product-image > img').attr('src')
             let rating = parseFloat($(_).find('.amount-mobile').text().split('/')[0].trim())
@@ -108,7 +111,7 @@ class PickabooScrapper {
             let discount = helper.calcDiscount(oPrice, sPrice)
             if (url !== undefined) {
                products.push({
-                  title, url, src, rating, ratingCount, sPrice, oPrice, discount,
+                  title, tags, url, src, rating, ratingCount, sPrice, oPrice, discount,
                   flag: flagCategory, website: websiteName
                })
             }
@@ -117,18 +120,42 @@ class PickabooScrapper {
       return products
    }
 
+   async getAllCategoryProducts(categories) {
+      let allProducts = []
+      console.log("\nGetting all category products...");
+
+      let counter = 1;
+      for (let cat of categories) {
+         console.log(`#${counter}/${categories.length} ${cat.name}`);
+         counter += 1
+         await this.page.goto(cat.url, { waitUntil: 'networkidle2' })
+         let products = await this.getCategoryProducts()
+         console.log(`  pro : ${products.length}\n`);
+         if (products.length !== 0) {
+            allProducts = allProducts.concat(products);
+         }
+      }
+      return allProducts
+   }
+
    async getAllProducts(categories) {
       let homePageProducts = await this.getHomePageProducts()
       let hotDealsProducts = await this.getHotDealsProducts()
       let log = {
-         hotDeals: hotDealsProducts.length,
-         homePage: homePageProducts.length,
-         category: []
+         topSale: {scrapped:hotDealsProducts.length},
+         homePage: {scrapped:homePageProducts.length},
+         category: {
+            total: 0,
+            details:[]
+         }
       }
       let categoryProducts = []
       for (let category of categories) {
          await this.page.goto(category.url, { waitUntil: 'networkidle2' })
          let products = await this.getCategoryProducts()
+         log.category.details.push({
+            name:category.name , scrapped : products.length
+         })
          if (products.length !== 0) {
             categoryProducts = categoryProducts.concat(products);
             console.log({ name: category.name, product: products.length })
@@ -140,8 +167,7 @@ class PickabooScrapper {
             .concat(hotDealsProducts)
             .concat(categoryProducts)
       )
-      log.category = categoryProducts.length
-      log.total = allUniqueProducts.length
+      log.category.total = allUniqueProducts.length
       return { log, data: allUniqueProducts }
    }
 
@@ -165,6 +191,29 @@ class PickabooScrapper {
       return { log: { sliders: allSliders.length }, data: allSliders }
    }
 
+   async scrapAndSave( categories ) {
+      let log = {total: {scrapped: 0,saved: 0,inReview: 0,exist:0},details:[]}
+      console.log("\nGetting all category products...");
+      let counter = 1;
+      for (let cat of categories) {
+         console.log(`#${counter}/${categories.length} ${cat.name}`);
+         counter += 1; await this.page.goto(cat.url, { waitUntil: 'networkidle2' })
+         let products = await this.getCategoryProducts()
+         console.log(`  pro : ${products.length}\n`);
+         if (products.length !== 0) {
+            let store = new Store()
+            let res = await store.saveProducts(products)
+            if (res.status === 'OK') {
+               log.total.scrapped += res.log.scrapped
+               log.total.saved += res.log.saved
+               log.total.inReview += res.log.inReview
+               log.total.exist += res.log.exist
+               let inLog = res.log; inLog.name = cat.name; log.details.push(inLog)
+            }
+         }
+      }
+      return log
+   }
 }
 
 module.exports = PickabooScrapper

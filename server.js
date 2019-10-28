@@ -19,5 +19,6 @@ const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
 
 /** Background Scrapper */
-const scrapper = require("./scrapper/")
-scrapper.test()
+//const scrapper = require("./scrapper/")
+//scrapper.test()
+//scrapper.mainLoop()

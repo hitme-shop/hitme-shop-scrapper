@@ -1,11 +1,12 @@
 
 const { initPuppeteer } = require('../../src/js/puppeteer')
-const PickabooScrapper = require("../../scrapper/pickaboo/")
+const DarazScrapper = require("../../scrapper/daraz/daraz")
+const autoScroll = require("../../src/js/auto-scroll")
 const store = require("../../store/store")
-const SITE_URL = "https://www.pickaboo.com/"
+const SITE_URL = "https://www.daraz.com.bd/"
 
-const defaultError = (res,message) => {
-   res.json({error:true,message})
+const defaultError = (res, message) => {
+   res.json({ error: true, message })
 }
 
 exports.scrapAssortSave = async (_, res) => {
@@ -62,52 +63,66 @@ exports.scrap = async (_, res) => {
 exports.getCategories = async (_, res) => {
    try {
       let { page, browser } = await initPuppeteer(SITE_URL)
-      let ps = new PickabooScrapper(page)
-      let catRes = await ps.getAllCategories()
+      let dz = new DarazScrapper(page)
+      await dz.loadCherioo()
+      let catRes = await dz.getAllCategories()
       await browser.close()
       res.json(catRes)
-   } catch (error) { defaultError( res , error.message )}
+   } catch (error) { defaultError(res, error.message) }
 }
 
 exports.getHotDeals = async (_, res) => {
    try {
       let { page, browser } = await initPuppeteer(SITE_URL)
-      let ps = new PickabooScrapper(page)
-      let dealRes = await ps.getHotDealsProducts()
+      await autoScroll.autoScroll(page, 1000, 70)
+      let dz = new DarazScrapper(page)
+      await dz.loadCherioo()
+      page.click('a.J_ShopMoreBtn')
+      await page.waitForNavigation()
+      await autoScroll.autoScroll(page, 3000, 64)
+      await dz.updatePage(page)
+      let flashSales = await dz.getFlashSells()
       await browser.close()
-      res.json(dealRes)
-   } catch (error) { defaultError( res , error.message )}
+      res.json(flashSales)
+   } catch (error) { defaultError(res, error.message) }
 }
 
 exports.getSliders = async (_, res) => {
    try {
       let { page, browser } = await initPuppeteer(SITE_URL)
-      let ps = new PickabooScrapper(page)
-      let sliderRes = await ps.getSliders()
+      await autoScroll.autoScroll(page, 1000, 70)
+      let dz = new DarazScrapper(page)
+      let sliderRes = await dz.getSliders()
       await browser.close()
       res.json(sliderRes)
-   } catch (error) { defaultError( res , error.message )}
+   } catch (error) { defaultError(res, error.message) }
 }
 
 exports.getHomePageProducts = async (_, res) => {
    try {
       let { page, browser } = await initPuppeteer(SITE_URL)
-      let ps = new PickabooScrapper(page)
-      let homeRes = await ps.getHomePageProducts()
+      let dz = new DarazScrapper(page)
+      await autoScroll.autoScroll(page, 3000, 64)
+      await autoScroll.scrollClick(page, '.J_LoadMoreButton')
+      await dz.updatePage(page)
+      let justForYou = await dz.getJustForYou()
       await browser.close()
-      res.json(homeRes)
-   } catch (error) { defaultError( res , error.message )}
+      res.json(justForYou)
+   } catch (error) { defaultError(res, error.message) }
 }
 
 exports.getCategoryProducts = async (_, res) => {
    try {
+      res.write('{')
       let { page, browser } = await initPuppeteer(SITE_URL)
-      let ps = new PickabooScrapper(page)
-      let categories = (await ps.getAllCategories()).data
-      let proRes = await ps.getAllCategoryProducts(categories)
+      let dz = new DarazScrapper(page)
+      await dz.loadCherioo()
+      let categories = (await dz.getAllCategories()).data
+      let proRes = await dz.getAllProducts(page,categories)
       await browser.close()
-      res.json(proRes)
-   } catch (error) { defaultError( res , error.message )}
+      res.write(JSON.stringify(proRes)+"}")
+      res.end()
+   } catch (error) { defaultError(res, error.message) }
 }
 
 exports.actions = (_, res) => {

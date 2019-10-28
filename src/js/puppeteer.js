@@ -17,22 +17,22 @@ exports.initPuppeteer = async (url) => {
    console.log("");
 
    const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       devtools: false,
-      //executablePath: chromePath,
-      //args: ['--start-maximized']
+      executablePath: chromePath,
+      args: ['--start-maximized']
    })
 
    const page = await browser.newPage();
 
-   // await page.setViewport({
-   //    width: 1366,
-   //    height: 768,
-   //    deviceScaleFactor: 1,
-   // });
+   await page.setViewport({
+      width: 1366,
+      height: 768,
+      deviceScaleFactor: 1,
+   });
 
-   // console.log(`|-- Going to : ${url} --|`);
-   // console.log("");
+   console.log(`|-- Going to : ${url} --|`);
+   console.log("");
 
    await page.goto(url, {
       waitUntil: 'networkidle2',

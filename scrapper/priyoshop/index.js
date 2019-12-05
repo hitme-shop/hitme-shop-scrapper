@@ -2,6 +2,17 @@ const cheerio = require('cheerio')
 
 var $, SITE_URL
 
+class PriyoshopScrapper {
+
+   constructor(page) { this.page = page }
+   async loadCheerio() { this.$ = cheerio.load(await this.page.content()) }
+   async updatePage(page) { this.page = page; this.$ = cheerio.load(await this.page.content()) }
+
+
+}
+
+module.exports = PriyoshopScrapper
+
 const getCategory = (root) => {
    let cats = []; $(root).each((__, _) => {
       cats.push({ name: $(_).text(), url: `${SITE_URL + $(_).attr('href')}` })
@@ -36,7 +47,7 @@ exports.homeProducts = async () => {
          let oPrice, opEl = $(_).find('.prices > span.old-price').text()
          opEl === '' ? oPrice = sPrice : oPrice = opEl.replace(/Tk|,/g, '').trim() * 1
          let discount = Math.round((oPrice - sPrice) / oPrice * 100)
-         products.push({ title, url, src, sPrice, oPrice,discount })
+         products.push({ title, url, src, sPrice, oPrice, discount })
       })
       section[sectionName] = products
    }); return section

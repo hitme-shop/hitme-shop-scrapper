@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const reviewsSchema = new mongoose.Schema({
    title: String,
-   tags: Array,
+   title_low: String,
    src: String,
    url: {
       type: String,

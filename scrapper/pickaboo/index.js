@@ -61,7 +61,7 @@ class PickabooScrapper {
       $('.syn-product').each((__, _) => {
          let src = $(_).find('.product-image > img').attr('data-original')
          let title = $(_).find('.syn-product-name > span > a').text().replace(/\r?\n|\r|\t/g, '').split(".").join("").trim()
-         let tags = title.toLowerCase().split(" ")
+         let title_low = title.trim().toLowerCase()
          let url = $(_).find('.syn-product-name > span > a').attr('href')
          let sPrice = $(_).find('.syn-product-price').text().replace(/\r?\n|\r|\t/g, '')
          let price = sPrice, oPrice = 0
@@ -70,7 +70,19 @@ class PickabooScrapper {
          let discount = ((oPrice - sPrice) / oPrice * 100).toFixed(2) * 1
          let rating = parseFloat($(_).find('.mobile-rating > p.amount-mobile').text().split('/')[0].trim())
          let ratingCount = parseFloat($(_).find('.ratings > .amount > a').text().split('(')[1].split(')')[0])
-         products.push({ title, tags, src, url, rating, ratingCount, flag: flagHome, sPrice, oPrice, discount, website: websiteName })
+         products.push({
+            title,
+            title_low,
+            src,
+            url,
+            rating,
+            ratingCount,
+            flag: flagHome,
+            sPrice,
+            oPrice,
+            discount,
+            website: websiteName
+         });
       }); return products
    }
 
@@ -83,11 +95,23 @@ class PickabooScrapper {
          let price = sPrice, oPrice = 0; sPrice = parseInt(sPrice.split('৳')[1].split(',').join(''))
          if (price.split('৳')[2]) oPrice = parseInt(price.split('৳')[2].split(',').join('')); else oPrice = sPrice
          let title = $(_).find('.syn-product-name > a > span').text().split(".").join("").trim()
-         let tags = title.toLowerCase().split(" ")
+         let title_low = title.trim().toLowerCase()
          let rating = parseInt($(_).find('.mobile-rating > p').text().split('/')[0].trim())
          let ratingCount = parseFloat($(_).find('.ratings > .amount > a').text().split('(')[1].split(')')[0])
          let discount = (((oPrice - sPrice) / oPrice) * 100).toFixed(2) * 1
-         deals.push({ title, tags, src, url, rating, ratingCount, flag: flagHot, sPrice, oPrice, discount, website: websiteName })
+         deals.push({
+            title,
+            title_low,
+            src,
+            url,
+            rating,
+            ratingCount,
+            flag: flagHot,
+            sPrice,
+            oPrice,
+            discount,
+            website: websiteName
+         });
       }); return deals
    }
 
@@ -97,7 +121,7 @@ class PickabooScrapper {
       $('.product-item').each((__, _) => {
          if ($(_).find(".out-of-stock span").text() !== "SOLD OUT") {
             let title = $(_).find('.product-name > a').text().trim()
-            let tags = title.toLowerCase().split(" ")
+            let title_low = title.trim().toLowerCase()
             let url = $(_).find('.product-name > a').attr('href')
             let src = $(_).find('.product-image > img').attr('src')
             let rating = parseFloat($(_).find('.amount-mobile').text().split('/')[0].trim())
@@ -111,9 +135,18 @@ class PickabooScrapper {
             let discount = helper.calcDiscount(oPrice, sPrice)
             if (url !== undefined) {
                products.push({
-                  title, tags, url, src, rating, ratingCount, sPrice, oPrice, discount,
-                  flag: flagCategory, website: websiteName
-               })
+                  title,
+                  title_low,
+                  url,
+                  src,
+                  rating,
+                  ratingCount,
+                  sPrice,
+                  oPrice,
+                  discount,
+                  flag: flagCategory,
+                  website: websiteName
+               });
             }
          }
       })

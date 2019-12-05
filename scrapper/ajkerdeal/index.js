@@ -42,21 +42,34 @@ class AjkerdealScrapper {
       })
       return data
    }
+   getProducts = () => {
+      let items = []; this.$('.deal-info-container').each((__, _) => {
+         let src = this.$(_).find('.deal-image-container > a > .deal_image').attr('src')
+         let title = this.$(_).find('.deal-title-container > h1 > a').text()
+         let oPrice = this.$(_).find('.deal-price-container').text().replace(/৳|-|,/g, '').replace('/', '') * 1
+         let url = this.$(_).find('.deal-image-container > a').attr('href')
+         let rating = this.$(_).find(' span.diamond-yellow > span').attr('style').replace(/width:|px;/g, "") * 1
+         items.push({
+            title, title_low: title.toLowerCase(), src, url, oPrice, sPrice: oPrice, rating,
+            ratingCount: 0, discount: 0, flag: 'Hot Deals',
+            website: "Ajkerdeal"
+         })
+      }); return items
+   }
    getHotDeals() {
       let deals = []; this.$('.hot-product-flash-deal').each((__, _) => {
          let url = this.$(_).find('a').attr('href'), splittedUrl = url.split("/")
          let title = splittedUrl[splittedUrl.length - 1].split("-").join(" ").trim()
-         let tags = title.toLowerCase().split(" ")
-         tags = [... new Set(tags)]
+         let title_low = title.toLowerCase()
          title = capitalizeFirstLetter(title)
          let src = this.$(_).find('a > .crazy-deal > img').attr('src')
          let sPrice = this.$(_).find('.price-text').text().replace('৳', '') * 1
          let discount = this.$(_).find('.percentage-amount-new').text() * 1
          let oPrice = Math.round(sPrice * (100 / discount))
          deals.push({
-            title, tags, url, src, sPrice, oPrice,
+            title, title_low, url, src, sPrice, oPrice,
             discount, rating: 0, ratingCount: 0, flag: 'Hot Deals',
-            website:"Ajkerdeal"
+            website: "Ajkerdeal"
          })
       })
       return deals
@@ -66,18 +79,19 @@ class AjkerdealScrapper {
       let data = []; this.$('.home-category-product-wrapper').each((__, _) => {
          let src = this.$(_).find('.home-category-product-image > a > img').attr('src')
          let title = this.$(_).find('.home-category-product-title > a').text().trim()
-         let tags = ""; if (title !== "") tags = title.toLowerCase().split(" ")
-         tags = [...new Set(tags)]
+         let title_low = title.toLowerCase()
+
          let url = this.$(_).find('.home-category-product-image > a').attr('href')
          let sPrice = this.$(_).find(".home-category-product-price").text().replace('৳', '') * 1
 
-         data.push({
-            title, src, tags, url, sPrice, oPrice: sPrice, discount: 0, rating: 0,
+         title !== "" && data.push({
+            title, src, title_low, url, sPrice, oPrice: sPrice, discount: 0, rating: 0,
             ratingCount: 0, website: 'Ajkerdeal', flag: 'Home Page'
          })
       })
-      return data.filter( pro => pro.title !== "" )
+      return data.filter(pro => pro.title !== "")
    }
+
 }
 
 module.exports = AjkerdealScrapper

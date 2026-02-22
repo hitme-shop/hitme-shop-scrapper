@@ -27,9 +27,9 @@
       "express": "^4.17.1",
       "mongoose": "^5.7.1",
       "morgan": "^1.9.1",
-      "puppeteer": "^1.20.0"
+      "puppeteer": "^24.37.5"
    },
    "devDependencies": {
-      "nodemon": "^1.19.2"
+      "nodemon": "^3.1.14"
    }
 }
